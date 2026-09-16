@@ -37,7 +37,7 @@ parser.add_argument(
     "--targetstrategy", type=str, default="random", choices=["mix", "random", "block"]
 )
 parser.add_argument("--missing_pattern", type=str, default="point")  # block|point
-parser.add_argument("--use_latent_diffusion_imputation", default=False)
+parser.add_argument("--use_latent_diffusion_imputation", default=True)
 parser.add_argument("--testmissingratio", type=float, default=0.5)
 
 
