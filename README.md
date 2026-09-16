@@ -42,14 +42,6 @@ python train_vada.py --dataset Synthetic
 # 3. Run observation imputation
 python exe_Synthetic.py
 ```
-
----
-
-## Visulization of the score function
-```bash
-# score-based_function_plot_Synthetic folder
-visualization_of_score_based_function.py
-```
 ---
 ## 📌 Notes
 - Ensure all required dependencies are installed before running the scripts.  
