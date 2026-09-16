@@ -18,6 +18,7 @@ class CrossAttention(nn.Module):
         self.gamma = nn.Parameter(torch.zeros(1))
 
     def forward(self, x1, x2):
+        # x1 作为 query, x2 作为 key 和 value
         B, C, H, W = x1.shape
 
         q = self.query(x1).view(B, C, -1)  # [B, C, H*W]
@@ -30,7 +31,7 @@ class CrossAttention(nn.Module):
         out = torch.bmm(v, attn.transpose(1, 2))  # [B, C, H*W]
         out = out.view(B, C, H, W)
 
-        return self.gamma * out + x1  
+        return self.gamma * out + x1  # 残差连接
 
 class NVAE(nn.Module):
     def __init__(self, args, arch_instance):
@@ -380,7 +381,7 @@ class NVAE(nn.Module):
             output = self.decoder_output(logits, sigma_mask)
             output_img = output.mean()
             # output_img = output_img.clamp(min=-5., max=5.)
-        return output_img  # no_grad
+        return output_img  # 不再是 no_grad
 
     def decoder_output(self, logits, sigma_mask):
         if self.decoder_dist in {'normal'}:

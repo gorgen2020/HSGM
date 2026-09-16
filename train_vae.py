@@ -95,10 +95,8 @@ def main(args):
         eval_freq = max(args.epochs // num_evaluations, 1)
         if ((epoch + 1) % eval_freq == 0 or epoch == (args.epochs - 1)):
             vae.eval()
-            print('#################')
-            print('begin validation!')
+
             valid_neg_log_p, valid_nelbo, imputation = test_vae(valid_queue, vae, num_samples=100, args=args, logging=logging)
-            print('#################')
 
             current_score = valid_nelbo
             logging.info('valid bpd nelbo %f', valid_nelbo * bpd_coeff)
@@ -136,13 +134,15 @@ def main(args):
         sn_calculator.load_state_dict(checkpoint['sn_calculator'], torch.device("cuda"))
     grad_scalar.load_state_dict(checkpoint['grad_scalar'])
 
-    print('loading the best model.')
-    print('#################')
-    print('begin test dataset testing!')
     valid_neg_log_p, valid_nelbo, imputation = test_vae(test_queue, vae, num_samples=100, args=args, logging=logging)
-    print('#################')
 
     with open("VAE_mae_" + args.dataset + "_imputation.txt", "w") as f:
+        f.write(str(imputation))
+        f.write('\n')
+
+    valid_neg_log_p, valid_nelbo, imputation = test_vae_reconstruction(test_queue, vae, num_samples=100, args=args, logging=logging)
+
+    with open("VAE_mae_" + args.dataset + "_reconstruction.txt", "w") as f:
         f.write(str(imputation))
         f.write('\n')
 
@@ -226,10 +226,10 @@ def test_vae_reconstruction(valid_queue, model, num_samples, args, logging):
 
 ################################################
     imputation = total_mae / total_evaluate_point
-    print(' reconstruction imputation mae is ' + str(imputation))
+    print(' test reconstruction imputation mae is ' + str(imputation))
 
     imputation_rmse = (total_rmse / total_evaluate_point)**0.5
-    print(' reconstruction imputation rmse is ' + str(imputation_rmse))
+    print(' test reconstruction imputation rmse is ' + str(imputation_rmse))
 
     all_target = torch.cat(all_target, dim=0)
     all_evalpoint = torch.cat(all_evalpoint, dim=0)
@@ -428,10 +428,10 @@ def test_vae(valid_queue, model, num_samples, args, logging):
 
 ################################################
     imputation = total_mae / total_evaluate_point
-    print(' imputation mae is ' + str(imputation))
+    print(' test imputation mae is ' + str(imputation))
 
     imputation_rmse = (total_rmse / total_evaluate_point)**0.5
-    print(' imputation rmse is ' + str(imputation_rmse))
+    print(' test imputation rmse is ' + str(imputation_rmse))
 
 
 
@@ -447,7 +447,7 @@ def test_vae(valid_queue, model, num_samples, args, logging):
     utils.average_tensor(neg_log_p_avg.avg, args.distributed)
     utils.average_tensor(reconst_avg.avg, args.distributed)
 
-    logging.info(' imputation mae is : %f, rmse: %f,CRPS:  %f', imputation, imputation_rmse, CRPS)
+    logging.info(' test imputation mae is : %f, rmse: %f,CRPS:  %f', imputation, imputation_rmse, CRPS)
 
     if args.distributed:
         # block to sync
